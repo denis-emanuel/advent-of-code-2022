@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"strings"
+)
+
+var (
+	linesPerGroup = 3
 )
 
 func main() {
@@ -11,26 +15,49 @@ func main() {
 	var score int
 
 	for scanner.Scan() {
-		line := scanner.Text()
-		length := len(line)
+		lines := ReadLines(scanner, linesPerGroup)
+		var appearances [53]int
 
-		firstHalf := line[:length/2]
-		secondHalf := line[length/2:]
+		for i, line := range lines {
+			for j := 0; j < len(line); j++ {
+				letter := int(line[j])
+				letterScore := CalcLetterScore(letter)
 
-		for i := 0; i < length/2; i++ {
-			letter := fmt.Sprintf("%c", firstHalf[i])
-
-			isCommon := strings.Contains(secondHalf, letter)
-			if isCommon {
-				if letter > "Z" {
-					score += int(firstHalf[i]) - int('a') + 1
-				} else {
-					score += int(firstHalf[i]) - int('A') + 1 + 26
+				if appearances[letterScore] == i {
+					appearances[letterScore]++
 				}
-				break
+
+				if appearances[letterScore] == linesPerGroup {
+					score += letterScore
+					break
+				}
 			}
 		}
+
+	}
+	fmt.Println(score)
+}
+
+func ReadLines(scanner *bufio.Scanner, noOfLines int) []string {
+	lines := make([]string, 0)
+
+	//Scan() already called once before this function is called
+	line := scanner.Text()
+	lines = append(lines, line)
+
+	for i := 0; i < noOfLines-1; i++ {
+		scanner.Scan()
+		line = scanner.Text()
+		lines = append(lines, line)
 	}
 
-	fmt.Println(score)
+	return lines
+}
+
+func CalcLetterScore(letterAscii int) int {
+	if letterAscii > int('Z') {
+		return letterAscii - int('a') + 1
+	} else {
+		return letterAscii - int('A') + 1 + 26
+	}
 }
